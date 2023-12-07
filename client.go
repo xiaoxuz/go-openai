@@ -18,6 +18,7 @@ type Client struct {
 
 	requestBuilder    utils.RequestBuilder
 	createFormBuilder func(io.Writer) utils.FormBuilder
+	Header            map[string]string
 }
 
 type Response interface {
@@ -114,6 +115,12 @@ func (c *Client) sendRequest(req *http.Request, v Response) error {
 	contentType := req.Header.Get("Content-Type")
 	if contentType == "" {
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	}
+
+	if len(c.Header) > 0 {
+		for k, v := range c.Header {
+			req.Header.Set(k, v)
+		}
 	}
 
 	res, err := c.config.HTTPClient.Do(req)
