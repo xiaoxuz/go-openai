@@ -54,10 +54,17 @@ func (c *Client) CreateChatCompletionStream(
 		return nil, err
 	}
 
+	if len(c.Header) > 0 {
+		for k, v := range c.Header {
+			req.Header.Set(k, v)
+		}
+	}
+
 	resp, err := sendRequestStream[ChatCompletionStreamResponse](c, req)
 	if err != nil {
 		return
 	}
+
 	stream = &ChatCompletionStream{
 		streamReader: resp,
 	}
