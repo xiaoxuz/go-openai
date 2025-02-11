@@ -92,10 +92,12 @@ type ChatMessagePart struct {
 }
 
 type ChatCompletionMessage struct {
-	Role         string `json:"role"`
-	Content      string `json:"content,omitempty"`
-	Refusal      string `json:"refusal,omitempty"`
-	MultiContent []ChatMessagePart
+	Role    string `json:"role"`
+	Content string `json:"content,omitempty"`
+	// deepseek 思维链
+	ReasoningContent string `json:"reasoning_content,omitempty"`
+	Refusal          string `json:"refusal,omitempty"`
+	MultiContent     []ChatMessagePart
 
 	// This property isn't in the official documentation, but it's in
 	// the documentation for the official library for python:

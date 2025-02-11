@@ -6,11 +6,13 @@ import (
 )
 
 type ChatCompletionStreamChoiceDelta struct {
-	Content      string        `json:"content,omitempty"`
-	Role         string        `json:"role,omitempty"`
-	FunctionCall *FunctionCall `json:"function_call,omitempty"`
-	ToolCalls    []ToolCall    `json:"tool_calls,omitempty"`
-	Refusal      string        `json:"refusal,omitempty"`
+	Content string `json:"content,omitempty"`
+	// deepseek 思维链
+	ReasoningContent string        `json:"reasoning_content,omitempty"`
+	Role             string        `json:"role,omitempty"`
+	FunctionCall     *FunctionCall `json:"function_call,omitempty"`
+	ToolCalls        []ToolCall    `json:"tool_calls,omitempty"`
+	Refusal          string        `json:"refusal,omitempty"`
 }
 
 type ChatCompletionStreamChoiceLogprobs struct {
