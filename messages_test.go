@@ -8,19 +8,16 @@ import (
 	"testing"
 
 	"github.com/xiaoxuz/go-openai"
+	"github.com/xiaoxuz/go-openai/internal/test"
 	"github.com/xiaoxuz/go-openai/internal/test/checks"
 )
 
 var emptyStr = ""
 
-// TestMessages Tests the messages endpoint of the API using the mocked server.
-func TestMessages(t *testing.T) {
+func setupServerForTestMessage(t *testing.T, server *test.ServerTest) {
 	threadID := "thread_abc123"
 	messageID := "msg_abc123"
 	fileID := "file_abc123"
-
-	client, server, teardown := setupOpenAITestServer()
-	defer teardown()
 
 	server.RegisterHandler(
 		"/v1/threads/"+threadID+"/messages/"+messageID+"/files/"+fileID,
@@ -68,6 +65,10 @@ func TestMessages(t *testing.T) {
 				metadata := map[string]any{}
 				err := json.NewDecoder(r.Body).Decode(&metadata)
 				checks.NoError(t, err, "unable to decode metadata in modify message call")
+				payload, ok := metadata["metadata"].(map[string]any)
+				if !ok {
+					t.Fatalf("metadata payload improperly wrapped %+v", metadata)
+				}
 
 				resBytes, _ := json.Marshal(
 					openai.Message{
@@ -86,8 +87,9 @@ func TestMessages(t *testing.T) {
 						FileIds:     nil,
 						AssistantID: &emptyStr,
 						RunID:       &emptyStr,
-						Metadata:    metadata,
+						Metadata:    payload,
 					})
+
 				fmt.Fprintln(w, string(resBytes))
 			case http.MethodGet:
 				resBytes, _ := json.Marshal(
@@ -109,6 +111,13 @@ func TestMessages(t *testing.T) {
 						RunID:       &emptyStr,
 						Metadata:    nil,
 					})
+				fmt.Fprintln(w, string(resBytes))
+			case http.MethodDelete:
+				resBytes, _ := json.Marshal(openai.MessageDeletionStatus{
+					ID:      messageID,
+					Object:  "thread.message.deleted",
+					Deleted: true,
+				})
 				fmt.Fprintln(w, string(resBytes))
 			default:
 				t.Fatalf("unsupported messages http method: %s", r.Method)
@@ -171,7 +180,18 @@ func TestMessages(t *testing.T) {
 			}
 		},
 	)
+}
 
+// TestMessages Tests the messages endpoint of the API using the mocked server.
+func TestMessages(t *testing.T) {
+	threadID := "thread_abc123"
+	messageID := "msg_abc123"
+	fileID := "file_abc123"
+
+	client, server, teardown := setupOpenAITestServer()
+	defer teardown()
+
+	setupServerForTestMessage(t, server)
 	ctx := context.Background()
 
 	// static assertion of return type
@@ -188,7 +208,7 @@ func TestMessages(t *testing.T) {
 	}
 
 	var msgs openai.MessagesList
-	msgs, err = client.ListMessage(ctx, threadID, nil, nil, nil, nil)
+	msgs, err = client.ListMessage(ctx, threadID, nil, nil, nil, nil, nil)
 	checks.NoError(t, err, "ListMessages error")
 	if len(msgs.Messages) != 1 {
 		t.Fatalf("unexpected length of fetched messages")
@@ -199,7 +219,8 @@ func TestMessages(t *testing.T) {
 	order := "desc"
 	after := "obj_foo"
 	before := "obj_bar"
-	msgs, err = client.ListMessage(ctx, threadID, &limit, &order, &after, &before)
+	runID := "run_abc123"
+	msgs, err = client.ListMessage(ctx, threadID, &limit, &order, &after, &before, &runID)
 	checks.NoError(t, err, "ListMessages error")
 	if len(msgs.Messages) != 1 {
 		t.Fatalf("unexpected length of fetched messages")
@@ -212,13 +233,24 @@ func TestMessages(t *testing.T) {
 	}
 
 	msg, err = client.ModifyMessage(ctx, threadID, messageID,
-		map[string]any{
+		map[string]string{
 			"foo": "bar",
 		})
 	checks.NoError(t, err, "ModifyMessage error")
 	if msg.Metadata["foo"] != "bar" {
 		t.Fatalf("expected message metadata to get modified")
 	}
+
+	msgDel, err := client.DeleteMessage(ctx, threadID, messageID)
+	checks.NoError(t, err, "DeleteMessage error")
+	if msgDel.ID != messageID {
+		t.Fatalf("unexpected message id: '%s'", msg.ID)
+	}
+	if !msgDel.Deleted {
+		t.Fatalf("expected deleted is true")
+	}
+	_, err = client.DeleteMessage(ctx, threadID, "not_exist_id")
+	checks.HasError(t, err, "DeleteMessage error")
 
 	// message files
 	var msgFile openai.MessageFile

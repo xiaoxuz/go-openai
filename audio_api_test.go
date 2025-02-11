@@ -40,12 +40,9 @@ func TestAudio(t *testing.T) {
 
 	ctx := context.Background()
 
-	dir, cleanup := test.CreateTestDirectory(t)
-	defer cleanup()
-
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			path := filepath.Join(dir, "fake.mp3")
+			path := filepath.Join(t.TempDir(), "fake.mp3")
 			test.CreateTestFile(t, path)
 
 			req := openai.AudioRequest{
@@ -90,12 +87,9 @@ func TestAudioWithOptionalArgs(t *testing.T) {
 
 	ctx := context.Background()
 
-	dir, cleanup := test.CreateTestDirectory(t)
-	defer cleanup()
-
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			path := filepath.Join(dir, "fake.mp3")
+			path := filepath.Join(t.TempDir(), "fake.mp3")
 			test.CreateTestFile(t, path)
 
 			req := openai.AudioRequest{
@@ -105,6 +99,10 @@ func TestAudioWithOptionalArgs(t *testing.T) {
 				Temperature: 0.5,
 				Language:    "zh",
 				Format:      openai.AudioResponseFormatSRT,
+				TimestampGranularities: []openai.TranscriptionTimestampGranularity{
+					openai.TranscriptionTimestampGranularitySegment,
+					openai.TranscriptionTimestampGranularityWord,
+				},
 			}
 			_, err := tc.createFn(ctx, req)
 			checks.NoError(t, err, "audio API error")

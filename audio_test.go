@@ -13,9 +13,7 @@ import (
 )
 
 func TestAudioWithFailingFormBuilder(t *testing.T) {
-	dir, cleanup := test.CreateTestDirectory(t)
-	defer cleanup()
-	path := filepath.Join(dir, "fake.mp3")
+	path := filepath.Join(t.TempDir(), "fake.mp3")
 	test.CreateTestFile(t, path)
 
 	req := AudioRequest{
@@ -24,6 +22,10 @@ func TestAudioWithFailingFormBuilder(t *testing.T) {
 		Temperature: 0.5,
 		Language:    "en",
 		Format:      AudioResponseFormatSRT,
+		TimestampGranularities: []TranscriptionTimestampGranularity{
+			TranscriptionTimestampGranularitySegment,
+			TranscriptionTimestampGranularityWord,
+		},
 	}
 
 	mockFailedErr := fmt.Errorf("mock form builder fail")
@@ -47,7 +49,7 @@ func TestAudioWithFailingFormBuilder(t *testing.T) {
 		return nil
 	}
 
-	failOn := []string{"model", "prompt", "temperature", "language", "response_format"}
+	failOn := []string{"model", "prompt", "temperature", "language", "response_format", "timestamp_granularities[]"}
 	for _, failingField := range failOn {
 		failForField = failingField
 		mockFailedErr = fmt.Errorf("mock form builder fail on field %s", failingField)
@@ -59,9 +61,7 @@ func TestAudioWithFailingFormBuilder(t *testing.T) {
 
 func TestCreateFileField(t *testing.T) {
 	t.Run("createFileField failing file", func(t *testing.T) {
-		dir, cleanup := test.CreateTestDirectory(t)
-		defer cleanup()
-		path := filepath.Join(dir, "fake.mp3")
+		path := filepath.Join(t.TempDir(), "fake.mp3")
 		test.CreateTestFile(t, path)
 
 		req := AudioRequest{
