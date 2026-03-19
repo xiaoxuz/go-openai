@@ -81,12 +81,11 @@ type ResponseInputContent struct {
 
 // InputItem represents an input item in the Responses API
 type InputItem struct {
-	Type    string `json:"type"`
-	Role    string `json:"role,omitempty"`
-	Content string `json:"content,omitempty"`
-	Name    string `json:"name,omitempty"`
+	Type string `json:"type"`
+	Role string `json:"role,omitempty"`
+	Name string `json:"name,omitempty"`
 	// For multi-modal input (text + image)
-	Contents []ResponseInputContent `json:"contents,omitempty"`
+	Content []ResponseInputContent `json:"content,omitempty"`
 }
 
 // ResponseRequest represents a request to the Responses API

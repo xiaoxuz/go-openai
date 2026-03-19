@@ -60,9 +60,14 @@ func TestCreateResponse_InputItems(t *testing.T) {
 		Model: "gpt-4o",
 		Input: []openai.InputItem{
 			{
-				Type:    "message",
-				Role:    "user",
-				Content: "Hello!",
+				Type: "message",
+				Role: "user",
+				Content: []openai.ResponseInputContent{
+					openai.ResponseInputContent{
+						Type: openai.ResponseInputContentTypeText,
+						Text: "Hellow",
+					},
+				},
 			},
 		},
 		Store: false,
@@ -91,7 +96,7 @@ func TestCreateResponse_ImageInput(t *testing.T) {
 			{
 				Type: "message",
 				Role: "user",
-				Contents: []openai.ResponseInputContent{
+				Content: []openai.ResponseInputContent{
 					{
 						Type: openai.ResponseInputContentTypeText,
 						Text: "描述这张图片",
