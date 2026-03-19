@@ -20,9 +20,9 @@ func TestCreateResponse_Text_NonStream(t *testing.T) {
 	server.RegisterHandler("/v1/responses", handleResponseEndpoint)
 
 	req := openai.ResponseRequest{
-		Model:  "gpt-4o",
-		Input:  "Hello, how are you?",
-		Store:  false,
+		Model: "gpt-4o",
+		Input: "Hello, how are you?",
+		Store: false,
 	}
 
 	resp, err := client.CreateResponse(context.Background(), req)
@@ -93,8 +93,8 @@ func TestCreateResponse_ImageInput(t *testing.T) {
 				Role: "user",
 				Contents: []openai.ResponseInputContent{
 					{
-						Type:     openai.ResponseInputContentTypeText,
-						Text:     "描述这张图片",
+						Type: openai.ResponseInputContentTypeText,
+						Text: "描述这张图片",
 					},
 					{
 						Type:     openai.ResponseInputContentTypeImage,
@@ -129,9 +129,9 @@ func TestCreateResponse_TextFormat(t *testing.T) {
 	server.RegisterHandler("/v1/responses", handleResponseEndpoint)
 
 	req := openai.ResponseRequest{
-		Model:  "gpt-4o",
-		Input:  "Jane, 54 years old",
-		Store:  false,
+		Model: "gpt-4o",
+		Input: "Jane, 54 years old",
+		Store: false,
 		Text: &openai.TextFormatConfig{
 			Format: &openai.TextFormat{
 				Type:   openai.TextFormatTypeJSONSchema,
@@ -212,7 +212,7 @@ func TestCreateResponseStream_Text(t *testing.T) {
 			fullText.WriteString(event.Delta)
 		case "response.completed":
 			if event.Response != nil {
-				if event.Response.Usage.PromptTokens == 0 {
+				if event.Response.Usage.InputTokens == 0 {
 					t.Error("expected usage to be populated")
 				}
 			}
@@ -340,10 +340,10 @@ func handleResponseEndpoint(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		Status: openai.ResponseStatusCompleted,
-		Usage: openai.Usage{
-			PromptTokens:     10,
-			CompletionTokens: 20,
-			TotalTokens:      30,
+		Usage: openai.ResponseUsage{
+			InputTokens:  10,
+			OutputTokens: 20,
+			TotalTokens:  30,
 		},
 	}
 
@@ -377,10 +377,10 @@ func handleResponseEndpointWithImage(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		Status: openai.ResponseStatusCompleted,
-		Usage: openai.Usage{
-			PromptTokens:     100,
-			CompletionTokens: 50,
-			TotalTokens:      150,
+		Usage: openai.ResponseUsage{
+			InputTokens:  100,
+			OutputTokens: 50,
+			TotalTokens:  150,
 		},
 	}
 
@@ -415,10 +415,10 @@ func handleResponseEndpointWithInstructions(w http.ResponseWriter, r *http.Reque
 			},
 		},
 		Status: openai.ResponseStatusCompleted,
-		Usage: openai.Usage{
-			PromptTokens:     20,
-			CompletionTokens: 40,
-			TotalTokens:      60,
+		Usage: openai.ResponseUsage{
+			InputTokens:  20,
+			OutputTokens: 40,
+			TotalTokens:  60,
 		},
 	}
 
@@ -451,21 +451,21 @@ func handleResponseStreamEndpoint(w http.ResponseWriter, r *http.Request) {
 		{
 			Type:         "response.output_text.delta",
 			ItemID:       "msg_1",
-			OutputIndex:   0,
+			OutputIndex:  0,
 			ContentIndex: 0,
 			Delta:        "Hello",
 		},
 		{
 			Type:         "response.output_text.delta",
 			ItemID:       "msg_1",
-			OutputIndex:   0,
+			OutputIndex:  0,
 			ContentIndex: 0,
 			Delta:        " World",
 		},
 		{
 			Type:         "response.output_text.delta",
 			ItemID:       "msg_1",
-			OutputIndex:   0,
+			OutputIndex:  0,
 			ContentIndex: 0,
 			Delta:        "!",
 		},
@@ -489,16 +489,16 @@ func handleResponseStreamEndpoint(w http.ResponseWriter, r *http.Request) {
 					},
 				},
 				Status: openai.ResponseStatusCompleted,
-				Usage: openai.Usage{
-					PromptTokens:     10,
-					CompletionTokens: 5,
-					TotalTokens:      15,
+				Usage: openai.ResponseUsage{
+					InputTokens:  10,
+					OutputTokens: 5,
+					TotalTokens:  15,
 				},
 			},
-			Usage: &openai.Usage{
-				PromptTokens:     10,
-				CompletionTokens: 5,
-				TotalTokens:      15,
+			Usage: &openai.ResponseUsage{
+				InputTokens:  10,
+				OutputTokens: 5,
+				TotalTokens:  15,
 			},
 		},
 	}

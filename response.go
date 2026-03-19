@@ -115,6 +115,31 @@ type ResponseRequest struct {
 	Truncation string `json:"truncation,omitempty"`
 }
 
+type ResponseUsageInputTokensDetails struct {
+	// The number of tokens that were retrieved from the cache.
+	// [More on prompt caching](https://platform.openai.com/docs/guides/prompt-caching).
+	CachedTokens int64 `json:"cached_tokens" api:"required"`
+}
+
+// A detailed breakdown of the output tokens.
+type ResponseUsageOutputTokensDetails struct {
+	// The number of reasoning tokens.
+	ReasoningTokens int64 `json:"reasoning_tokens" api:"required"`
+}
+
+type ResponseUsage struct {
+	// The number of input tokens.
+	InputTokens int64 `json:"input_tokens" api:"required"`
+	// A detailed breakdown of the input tokens.
+	InputTokensDetails ResponseUsageInputTokensDetails `json:"input_tokens_details" api:"required"`
+	// The number of output tokens.
+	OutputTokens int64 `json:"output_tokens" api:"required"`
+	// A detailed breakdown of the output tokens.
+	OutputTokensDetails ResponseUsageOutputTokensDetails `json:"output_tokens_details" api:"required"`
+	// The total number of tokens used.
+	TotalTokens int64 `json:"total_tokens" api:"required"`
+}
+
 // APIResponse represents a response from the Responses API
 type APIResponse struct {
 	ID           string         `json:"id"`
@@ -123,7 +148,7 @@ type APIResponse struct {
 	Model        string         `json:"model"`
 	Output       []OutputItem   `json:"output"`
 	Status       ResponseStatus `json:"status"`
-	Usage        Usage          `json:"usage"`
+	Usage        ResponseUsage  `json:"usage"`
 	Instructions string         `json:"instructions,omitempty"`
 	CompletedAt  *int64         `json:"completed_at,omitempty"`
 	Background   bool           `json:"background,omitempty"`
@@ -319,8 +344,8 @@ type ResponseStreamEvent struct {
 	Name      string `json:"name,omitempty"`
 
 	// For completed event (response.completed)
-	Response *APIResponse `json:"response,omitempty"`
-	Usage    *Usage       `json:"usage,omitempty"`
+	Response *APIResponse   `json:"response,omitempty"`
+	Usage    *ResponseUsage `json:"usage,omitempty"`
 
 	// For error event
 	Code    string `json:"code,omitempty"`
