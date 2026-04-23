@@ -268,6 +268,40 @@ type ChatCompletionRequest struct {
 	ReasoningEffort string `json:"reasoning_effort,omitempty"`
 	// Metadata to store with the completion.
 	Metadata map[string]string `json:"metadata,omitempty"`
+	// ExtraFields allows passing arbitrary additional fields to the API request.
+	// This is useful for vendor-specific parameters that are not part of the standard OpenAI API.
+	ExtraFields map[string]any `json:"-"`
+}
+
+// MarshalJSON customizes JSON marshaling to include ExtraFields.
+func (r ChatCompletionRequest) MarshalJSON() ([]byte, error) {
+	// Use an alias to avoid infinite recursion
+	type Alias ChatCompletionRequest
+	baseBytes, err := json.Marshal(struct {
+		Alias
+	}{
+		Alias: (Alias)(r),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// If no extra fields, return base JSON
+	if len(r.ExtraFields) == 0 {
+		return baseBytes, nil
+	}
+
+	// Merge extra fields into base JSON
+	var baseMap map[string]any
+	if err := json.Unmarshal(baseBytes, &baseMap); err != nil {
+		return nil, err
+	}
+
+	for k, v := range r.ExtraFields {
+		baseMap[k] = v
+	}
+
+	return json.Marshal(baseMap)
 }
 
 type StreamOptions struct {

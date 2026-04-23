@@ -43,6 +43,9 @@ type ClientConfig struct {
 	HTTPClient           HTTPDoer
 
 	EmptyMessagesLimit uint
+
+	// Debug enables printing of request details for debugging purposes
+	Debug bool
 }
 
 func DefaultConfig(authToken string) ClientConfig {

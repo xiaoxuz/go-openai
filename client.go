@@ -106,6 +106,16 @@ func (c *Client) newRequest(ctx context.Context, method, url string, setters ...
 	for _, setter := range setters {
 		setter(args)
 	}
+
+	// Debug: print request details
+	if c.config.Debug && args.body != nil {
+		bodyBytes, err := json.MarshalIndent(args.body, "", "  ")
+		if err == nil {
+			fmt.Printf("[OpenAI Debug] Request URL: %s %s\n", method, url)
+			fmt.Printf("[OpenAI Debug] Request Body:\n%s\n", string(bodyBytes))
+		}
+	}
+
 	req, err := c.requestBuilder.Build(ctx, method, url, args.body, args.header)
 	if err != nil {
 		return nil, err
