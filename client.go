@@ -108,11 +108,17 @@ func (c *Client) newRequest(ctx context.Context, method, url string, setters ...
 	}
 
 	// Debug: print request details
-	if c.config.Debug && args.body != nil {
-		bodyBytes, err := json.MarshalIndent(args.body, "", "  ")
-		if err == nil {
-			fmt.Printf("[OpenAI Debug] Request URL: %s %s\n", method, url)
-			fmt.Printf("[OpenAI Debug] Request Body:\n%s\n", string(bodyBytes))
+	if c.config.Debug {
+		fmt.Printf("[OpenAI Debug] Request URL: %s %s\n", method, url)
+		if args.body != nil {
+			bodyBytes, err := json.MarshalIndent(args.body, "", "  ")
+			if err != nil {
+				fmt.Printf("[OpenAI Debug] Request Body Marshal Error: %v\n", err)
+			} else {
+				fmt.Printf("[OpenAI Debug] Request Body:\n%s\n", string(bodyBytes))
+			}
+		} else {
+			fmt.Printf("[OpenAI Debug] Request Body: nil\n")
 		}
 	}
 
